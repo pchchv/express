@@ -81,3 +81,13 @@ func (r Result[T, E]) AndThen(fn func(T) Result[T, E]) Result[T, E] {
 
 	return r
 }
+
+// Ok returns a Result that contains the given values.
+func Ok[T, E any](value T) Result[T, E] {
+	return Result[T, E]{ok: value, isOk: true}
+}
+
+// Err returns a Result that contains the given error.
+func Err[T, E any](err E) Result[T, E] {
+	return Result[T, E]{err: err}
+}
