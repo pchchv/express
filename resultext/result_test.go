@@ -53,6 +53,38 @@ func TestAndXXX(t *testing.T) {
 	Equal(t, Err[int, error](io.ErrUnexpectedEOF), ok.AndThen(func(int) Result[int, error] { return Err[int, error](io.ErrUnexpectedEOF) }))
 }
 
+func BenchmarkResultOk(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if res := returnOk(); res.IsOk() {
+			_ = res.Unwrap()
+		}
+	}
+}
+
+func BenchmarkResultErr(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if res := returnErr(); res.IsOk() {
+			_ = res.Unwrap()
+		}
+	}
+}
+
+func BenchmarkNoResultOk(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if res, err := returnOkNoResult(); err != nil {
+			_ = res
+		}
+	}
+}
+
+func BenchmarkNoResultErr(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if res, err := returnErrNoResult(); err != nil {
+			_ = res
+		}
+	}
+}
+
 func returnOk() Result[Struct, error] {
 	return Ok[Struct, error](Struct{})
 }
