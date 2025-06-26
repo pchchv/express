@@ -42,3 +42,13 @@ func (r Result[T, E]) UnwrapOrElse(fn func() T) T {
 func (r Result[T, E]) UnwrapOrDefault() T {
 	return r.ok
 }
+
+// IsOk returns true if the result is successful with no error.
+func (r Result[T, E]) IsOk() bool {
+	return r.isOk
+}
+
+// IsErr returns true if the result is not successful and has an error.
+func (r Result[T, E]) IsErr() bool {
+	return !r.isOk
+}
