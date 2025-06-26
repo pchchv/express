@@ -60,3 +60,11 @@ func returnOk() Result[Struct, error] {
 func returnErr() Result[Struct, error] {
 	return Err[Struct, error](errors.New("bad"))
 }
+
+func returnOkNoResult() (Struct, error) {
+	return Struct{}, nil
+}
+
+func returnErrNoResult() (Struct, error) {
+	return Struct{}, errors.New("bad")
+}
