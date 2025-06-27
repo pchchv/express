@@ -8,6 +8,11 @@ type MutexGuard[T any, M interface{ Unlock() }] struct {
 	T T // is the inner generic type of the Mutex
 }
 
+// Unlock unlocks the Mutex value.
+func (g MutexGuard[T, M]) Unlock() {
+	g.m.Unlock()
+}
+
 // Mutex creates a type safe mutex wrapper ensuring one cannot access the
 // values of a locked values without first gaining a lock.
 type Mutex[T any] struct {
