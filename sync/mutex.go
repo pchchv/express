@@ -49,3 +49,24 @@ func (m Mutex[T]) Lock() MutexGuard[T, *sync.Mutex] {
 func (m Mutex[T]) Unlock() {
 	m.m.Unlock()
 }
+
+// PerformMut safely locks and unlocks the Mutex values and performs the provided function returning its error if one
+// otherwise setting the returned value as the new mutex value.
+func (m Mutex[T]) PerformMut(f func(T)) {
+	guard := m.Lock()
+	f(guard.T)
+	guard.Unlock()
+}
+
+// TryLock tries to lock Mutex and reports whether it succeeded.
+// If it does the value is returned for use in the Ok result otherwise Err with empty value.
+func (m Mutex[T]) TryLock() resultext.Result[MutexGuard[T, *sync.Mutex], struct{}] {
+	if m.m.TryLock() {
+		return resultext.Ok[MutexGuard[T, *sync.Mutex], struct{}](MutexGuard[T, *sync.Mutex]{
+			m: m.m,
+			T: m.value,
+		})
+	} else {
+		return resultext.Err[MutexGuard[T, *sync.Mutex], struct{}](struct{}{})
+	}
+}
