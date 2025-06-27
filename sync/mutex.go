@@ -19,3 +19,11 @@ type Mutex[T any] struct {
 	m     *sync.Mutex
 	value T
 }
+
+// NewMutex creates a new Mutex for use.
+func NewMutex[T any](value T) Mutex[T] {
+	return Mutex[T]{
+		m:     new(sync.Mutex),
+		value: value,
+	}
+}
