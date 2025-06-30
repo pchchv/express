@@ -141,3 +141,17 @@ func (m RWMutex[T]) RLock() RMutexGuard[T] {
 		T:  m.value,
 	}
 }
+
+// Perform safely locks and unlocks the RWMutex read-only values and performs the provided function.
+func (m RWMutex[T]) Perform(f func(T)) {
+	guard := m.RLock()
+	f(guard.T)
+	guard.RUnlock()
+}
+
+// PerformMut safely locks and unlocks the RWMutex mutable values and performs the provided function.
+func (m RWMutex[T]) PerformMut(f func(T)) {
+	guard := m.Lock()
+	f(guard.T)
+	guard.Unlock()
+}
