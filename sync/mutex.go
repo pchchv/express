@@ -115,3 +115,29 @@ func (m RWMutex[T]) Lock() MutexGuard[T, *sync.RWMutex] {
 		T: m.value,
 	}
 }
+
+// TryRLock tries to lock RWMutex for reading and returns the value in the Ok result if successful.
+// If it does the value is returned for use in the Ok result otherwise Err with empty value.
+func (m RWMutex[T]) TryRLock() resultext.Result[RMutexGuard[T], struct{}] {
+	if m.rw.TryRLock() {
+		return resultext.Ok[RMutexGuard[T], struct{}](
+			RMutexGuard[T]{
+				rw: m.rw,
+				T:  m.value,
+			},
+		)
+	} else {
+		return resultext.Err[RMutexGuard[T]](struct{}{})
+	}
+}
+
+// RLock locks the RWMutex for reading and returns the value for read-only use.
+// It should not be used for recursive read locking,
+// because a blocked Lock call excludes new readers from acquiring the lock.
+func (m RWMutex[T]) RLock() RMutexGuard[T] {
+	m.rw.RLock()
+	return RMutexGuard[T]{
+		rw: m.rw,
+		T:  m.value,
+	}
+}
