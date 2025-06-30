@@ -70,3 +70,8 @@ type RMutexGuard[T any] struct {
 	// T is the inner generic type of the Mutex
 	T T
 }
+
+// RUnlock unlocks the RWMutex value.
+func (g RMutexGuard[T]) RUnlock() {
+	g.rw.RUnlock()
+}
