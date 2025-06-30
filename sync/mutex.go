@@ -75,3 +75,10 @@ type RMutexGuard[T any] struct {
 func (g RMutexGuard[T]) RUnlock() {
 	g.rw.RUnlock()
 }
+
+// RWMutex creates a type safe RWMutex wrapper ensuring one cannot access the
+// values of a locked values without first gaining a lock.
+type RWMutex[T any] struct {
+	rw    *sync.RWMutex
+	value T
+}
