@@ -63,3 +63,10 @@ func (m Mutex[T]) TryLock() resultext.Result[MutexGuard[T, *sync.Mutex], struct{
 		return resultext.Err[MutexGuard[T, *sync.Mutex], struct{}](struct{}{})
 	}
 }
+
+// RMutexGuard protects the inner contents of a RWMutex for safety and unlocking.
+type RMutexGuard[T any] struct {
+	rw *sync.RWMutex
+	// T is the inner generic type of the Mutex
+	T T
+}
