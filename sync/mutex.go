@@ -90,3 +90,28 @@ func NewRWMutex[T any](value T) RWMutex[T] {
 		value: value,
 	}
 }
+
+// TryLock tries to lock RWMutex and returns the value in the Ok result if successful.
+// If it does the value is returned for use in the Ok result otherwise Err with empty value.
+func (m RWMutex[T]) TryLock() resultext.Result[MutexGuard[T, *sync.RWMutex], struct{}] {
+	if m.rw.TryLock() {
+		return resultext.Ok[MutexGuard[T, *sync.RWMutex], struct{}](
+			MutexGuard[T, *sync.RWMutex]{
+				m: m.rw,
+				T: m.value,
+			})
+	} else {
+		return resultext.Err[MutexGuard[T, *sync.RWMutex]](struct{}{})
+	}
+}
+
+// Lock locks the Mutex and returns value for use,
+// safe for mutation if the lock is already in use,
+// the calling goroutine blocks until the mutex is available.
+func (m RWMutex[T]) Lock() MutexGuard[T, *sync.RWMutex] {
+	m.rw.Lock()
+	return MutexGuard[T, *sync.RWMutex]{
+		m: m.rw,
+		T: m.value,
+	}
+}
