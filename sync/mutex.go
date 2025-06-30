@@ -82,3 +82,11 @@ type RWMutex[T any] struct {
 	rw    *sync.RWMutex
 	value T
 }
+
+// NewRWMutex creates a new RWMutex for use.
+func NewRWMutex[T any](value T) RWMutex[T] {
+	return RWMutex[T]{
+		rw:    new(sync.RWMutex),
+		value: value,
+	}
+}
