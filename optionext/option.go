@@ -92,6 +92,26 @@ func (o Option[T]) AndThen(fn func(T) Option[T]) Option[T] {
 	return o
 }
 
+// Unwrap returns the values if the option is not empty or panics.
+func (o Option[T]) Unwrap() T {
+	if !o.isSome {
+		panic("Option.Unwrap: option is None")
+	}
+
+	return o.value
+}
+
+// UnwrapOr returns the contained `Some` value or provided default value.
+//
+// Arguments passed to `UnwrapOr` are eagerly evaluated.
+func (o Option[T]) UnwrapOr(value T) T {
+	if o.isSome {
+		return o.value
+	}
+
+	return value
+}
+
 // Some creates a new Option with the given values.
 func Some[T any](value T) Option[T] {
 	return Option[T]{value, true}
