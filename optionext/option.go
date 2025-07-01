@@ -27,3 +27,13 @@ type Option[T any] struct {
 	value  T
 	isSome bool
 }
+
+// IsSome returns true if the option is not empty.
+func (o Option[T]) IsSome() bool {
+	return o.isSome
+}
+
+// IsNone returns true if the option is empty.
+func (o Option[T]) IsNone() bool {
+	return !o.isSome
+}
