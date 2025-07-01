@@ -104,12 +104,29 @@ func (o Option[T]) Unwrap() T {
 // UnwrapOr returns the contained `Some` value or provided default value.
 //
 // Arguments passed to `UnwrapOr` are eagerly evaluated.
+// If passing the result of a function call,
+// look to use `UnwrapOrElse`,
+// which can be evaluated lazily.
 func (o Option[T]) UnwrapOr(value T) T {
 	if o.isSome {
 		return o.value
 	}
 
 	return value
+}
+
+// UnwrapOrElse returns the contained `Some` value or computes it from a provided function.
+func (o Option[T]) UnwrapOrElse(fn func() T) T {
+	if o.isSome {
+		return o.value
+	}
+
+	return fn()
+}
+
+// UnwrapOrDefault returns the contained `Some` value or the default value of the type T.
+func (o Option[T]) UnwrapOrDefault() T {
+	return o.value
 }
 
 // Some creates a new Option with the given values.
