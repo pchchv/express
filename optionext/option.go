@@ -37,3 +37,13 @@ func (o Option[T]) IsSome() bool {
 func (o Option[T]) IsNone() bool {
 	return !o.isSome
 }
+
+// Some creates a new Option with the given values.
+func Some[T any](value T) Option[T] {
+	return Option[T]{value, true}
+}
+
+// None creates an empty Option that represents no values.
+func None[T any]() Option[T] {
+	return Option[T]{}
+}
