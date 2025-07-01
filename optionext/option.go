@@ -1,5 +1,7 @@
 package optionext
 
+import "encoding/json"
+
 // Option represents a values that represents a values existence.
 //
 // nil is usually used on Go however this has two problems:
@@ -36,6 +38,32 @@ func (o Option[T]) IsSome() bool {
 // IsNone returns true if the option is empty.
 func (o Option[T]) IsNone() bool {
 	return !o.isSome
+}
+
+// MarshalJSON implements the `json.Marshaler` interface.
+func (o Option[T]) MarshalJSON() ([]byte, error) {
+	if o.isSome {
+		return json.Marshal(o.value)
+	}
+
+	return []byte("null"), nil
+}
+
+// UnmarshalJSON implements the `json.Unmarshaler` interface.
+func (o *Option[T]) UnmarshalJSON(data []byte) error {
+	if len(data) == 4 && string(data[:4]) == "null" {
+		*o = None[T]()
+		return nil
+	}
+
+	var v T
+	err := json.Unmarshal(data, &v)
+	if err != nil {
+		return err
+	}
+
+	*o = Some(v)
+	return nil
 }
 
 // Some creates a new Option with the given values.
