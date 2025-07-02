@@ -136,3 +136,15 @@ func returnTypedNoneOptionPtr() Option[*testStruct] {
 func returnTypedSomeOptionPtr() Option[*testStruct] {
 	return Some(new(testStruct))
 }
+
+func returnTypedSomeOptionNil() Option[any] {
+	return Some[any](nil)
+}
+
+func returnTypedNoOption() *testStruct {
+	return new(testStruct)
+}
+
+func returnNoOptionNil() (any, bool) {
+	return nil, true
+}
