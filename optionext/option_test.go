@@ -1,6 +1,7 @@
 package optionext
 
 import (
+	"database/sql/driver"
 	"encoding/json"
 	"testing"
 	"time"
@@ -14,6 +15,13 @@ type customStringType string
 
 type testStructType struct {
 	Name string
+}
+
+type valueTest struct {
+}
+
+func (valueTest) Value() (driver.Value, error) {
+	return "value", nil
 }
 
 func TestAndXXX(t *testing.T) {
