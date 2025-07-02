@@ -24,6 +24,18 @@ func (valueTest) Value() (driver.Value, error) {
 	return "value", nil
 }
 
+type customScanner struct {
+	S string
+}
+
+func (c *customScanner) Scan(src interface{}) error {
+	if src != nil {
+		c.S = src.(string)
+	}
+
+	return nil
+}
+
 func TestAndXXX(t *testing.T) {
 	s := Some(1)
 	Equal(t, Some(3), s.And(func(i int) int { return 3 }))
