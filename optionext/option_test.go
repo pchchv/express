@@ -121,6 +121,47 @@ func TestOptionJSONOmitempty(t *testing.T) {
 	Equal(t, `{}`, string(b))
 }
 
+func BenchmarkOption(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		opt := returnTypedSomeOption()
+		if opt.IsSome() {
+			_ = opt.Unwrap()
+		}
+	}
+}
+
+func BenchmarkOptionPtr(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if opt := returnTypedSomeOptionPtr(); opt.IsSome() {
+			_ = opt.Unwrap()
+		}
+	}
+}
+
+func BenchmarkNoOptionPtr(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if result := returnTypedNoOption(); result != nil {
+			_ = result
+		}
+	}
+}
+
+func BenchmarkOptionNil(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if opt := returnTypedSomeOptionNil(); opt.IsSome() {
+			_ = opt.Unwrap()
+		}
+	}
+}
+
+func BenchmarkNoOptionNil(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		if result, found := returnNoOptionNil(); found {
+			_ = result
+		}
+	}
+}
+
 func returnTypedNoneOption() Option[testStruct] {
 	return None[testStruct]()
 }
