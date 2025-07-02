@@ -162,3 +162,43 @@ func (o *Option[T]) Scan(value any) error {
 	}
 	return nil
 }
+
+// Value implements the driver.Valuer interface.
+//
+// This honours the `driver.Valuer` interface if the value implements it.
+// It also supports custom types of the std types and treats all else as []byte.
+func (o Option[T]) Value() (driver.Value, error) {
+	if o.IsNone() {
+		return nil, nil
+	}
+
+	val := reflect.ValueOf(o.value)
+	if val.Type().Implements(valuerType) {
+		return val.Interface().(driver.Valuer).Value()
+	}
+
+	switch val.Kind() {
+	case reflect.String:
+		return val.Convert(stringType).Interface(), nil
+	case reflect.Bool:
+		return val.Convert(boolType).Interface(), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return val.Convert(int64Type).Interface(), nil
+	case reflect.Float64:
+		return val.Convert(float64Type).Interface(), nil
+	case reflect.Slice, reflect.Array:
+		if val.Type().ConvertibleTo(byteSliceType) {
+			return val.Convert(byteSliceType).Interface(), nil
+		}
+		return json.Marshal(val.Interface())
+	case reflect.Struct:
+		if val.CanConvert(timeType) {
+			return val.Convert(timeType).Interface(), nil
+		}
+		return json.Marshal(val.Interface())
+	case reflect.Map:
+		return json.Marshal(val.Interface())
+	default:
+		return o.value, nil
+	}
+}
