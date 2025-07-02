@@ -10,6 +10,8 @@ import (
 
 type testStruct struct{}
 
+type customStringType string
+
 func TestAndXXX(t *testing.T) {
 	s := Some(1)
 	Equal(t, Some(3), s.And(func(i int) int { return 3 }))
