@@ -97,3 +97,61 @@ func takeWhile(data []byte, pred func(byte) bool) (end uint16) {
 	}
 	return
 }
+
+func tokenizeSelectorPath(data []byte) (result LexerResult, err error) {
+	if end := takeWhile(data[1:], func(b byte) bool {
+		return !isWhitespace(b) && b != ')' && b != ']'
+	}); end > 0 {
+		if len(data) > int(end) {
+			end += 1
+		}
+		result = LexerResult{
+			kind: SelectorPath,
+			len:  end,
+		}
+	} else {
+		err = ErrInvalidSelectorPath{s: string(data)}
+	}
+
+	return
+}
+
+func tokenizeString(data []byte, quote byte) (result LexerResult, err error) {
+	var lastBackslash, endedWithTerminator bool
+	if end := takeWhile(data[1:], func(b byte) bool {
+		switch b {
+		case '\\':
+			lastBackslash = true
+			return true
+		case quote:
+			if lastBackslash {
+				lastBackslash = false
+				return true
+			}
+			endedWithTerminator = true
+			return false
+		default:
+			return true
+		}
+	}); end > 0 {
+		if endedWithTerminator {
+			result = LexerResult{
+				kind: QuotedString,
+				len:  end + 2,
+			}
+		} else {
+			err = ErrUnterminatedString{s: string(data)}
+		}
+	} else {
+		if !endedWithTerminator || len(data) < 2 {
+			err = ErrUnterminatedString{s: string(data)}
+		} else {
+			result = LexerResult{
+				kind: QuotedString,
+				len:  2,
+			}
+		}
+	}
+
+	return
+}
