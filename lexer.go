@@ -24,3 +24,16 @@ func isUpper(c byte) bool {
 func isLower(c byte) bool {
 	return c >= 'a' && c <= 'z'
 }
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isWhitespace(b byte) bool {
+	switch b {
+	case '\t', '\n', '\v', '\f', '\r', ' ', 0x85, 0xA0:
+		return true
+	default:
+		return false
+	}
+}
