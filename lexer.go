@@ -10,3 +10,9 @@ type Token struct {
 	Len   uint16
 	Kind  TokenKind
 }
+
+// LexerResult represents a token lexed result.
+type LexerResult struct {
+	kind TokenKind
+	len  uint16
+}
