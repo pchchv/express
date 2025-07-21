@@ -45,3 +45,20 @@ func isAlphanumeric(c byte) bool {
 func isAlphabetical(c byte) bool {
 	return isLower(c) || isUpper(c)
 }
+
+func skipWhitespace(data []byte) uint16 {
+	return takeWhile(data, func(b byte) bool {
+		return isWhitespace(b)
+	})
+}
+
+// takeWhile сonsumes bytes while a predicate evaluates to true.
+func takeWhile(data []byte, pred func(byte) bool) (end uint16) {
+	for _, b := range data {
+		if !pred(b) {
+			break
+		}
+		end++
+	}
+	return
+}
