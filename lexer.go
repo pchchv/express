@@ -16,3 +16,11 @@ type LexerResult struct {
 	kind TokenKind
 	len  uint16
 }
+
+func isUpper(c byte) bool {
+	return c >= 'A' && c <= 'Z'
+}
+
+func isLower(c byte) bool {
+	return c >= 'a' && c <= 'z'
+}
