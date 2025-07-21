@@ -37,3 +37,11 @@ func isWhitespace(b byte) bool {
 		return false
 	}
 }
+
+func isAlphanumeric(c byte) bool {
+	return isLower(c) || isUpper(c) || isDigit(c)
+}
+
+func isAlphabetical(c byte) bool {
+	return isLower(c) || isUpper(c)
+}
