@@ -1,5 +1,40 @@
 package express
 
+const (
+	SelectorPath = iota
+	QuotedString
+	Number
+	BooleanTrue
+	BooleanFalse
+	Null
+	Equals
+	Add
+	Subtract
+	Multiply
+	Divide
+	Gt
+	Gte
+	Lt
+	Lte
+	And
+	Or
+	Not
+	Contains
+	ContainsAny
+	ContainsAll
+	In
+	Between
+	StartsWith
+	EndsWith
+	OpenBracket
+	CloseBracket
+	Comma
+	OpenParen
+	CloseParen
+	Coerce
+	Identifier
+	Colon
+)
 
 // TokenKind is the type of token lexed.
 type TokenKind uint8
