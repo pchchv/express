@@ -37,3 +37,12 @@ type ErrInvalidBool struct {
 func (e ErrInvalidBool) Error() string {
 	return fmt.Sprintf("Invalid boolean `%s`", e.s)
 }
+
+// ErrInvalidNumber represents an invalid number.
+type ErrInvalidNumber struct {
+	s string
+}
+
+func (e ErrInvalidNumber) Error() string {
+	return fmt.Sprintf("Invalid number `%s`", e.s)
+}
