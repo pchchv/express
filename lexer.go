@@ -1,5 +1,10 @@
 package express
 
+import (
+	"github.com/pchchv/extender/optionext"
+	"github.com/pchchv/extender/resultext"
+)
+
 const (
 	SelectorPath = iota
 	QuotedString
@@ -64,6 +69,21 @@ func NewTokenizer(src []byte) *Tokenizer {
 		pos:       0,
 		remaining: src,
 	}
+}
+
+func (t *Tokenizer) nextToken() optionext.Option[resultext.Result[Token, error]] {
+	result, err := tokenizeSingleToken(t.remaining)
+	if err != nil {
+		return optionext.Some(resultext.Err[Token, error](err))
+	}
+
+	token := Token{
+		Start: t.pos,
+		Len:   result.len,
+		Kind:  result.kind,
+	}
+	t.chomp(result.len)
+	return optionext.Some(resultext.Ok[Token, error](token))
 }
 
 func (t *Tokenizer) chomp(num uint16) {
