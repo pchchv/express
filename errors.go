@@ -28,3 +28,12 @@ type ErrInvalidKeyword struct {
 func (e ErrInvalidKeyword) Error() string {
 	return fmt.Sprintf("Invalid keyword `%s`", e.s)
 }
+
+// ErrInvalidBool represents an invalid boolean.
+type ErrInvalidBool struct {
+	s string
+}
+
+func (e ErrInvalidBool) Error() string {
+	return fmt.Sprintf("Invalid boolean `%s`", e.s)
+}
