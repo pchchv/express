@@ -193,3 +193,30 @@ func tokenizeBool(data []byte) (result LexerResult, err error) {
 	}
 	return
 }
+
+func tokenizeNumber(data []byte) (result LexerResult, err error) {
+	var dotSeen, badNumber bool
+	if end := takeWhile(data, func(b byte) bool {
+		switch b {
+		case '.':
+			if dotSeen {
+				badNumber = true
+				return false
+			}
+			dotSeen = true
+			return true
+		case '-', '+':
+			return true
+		default:
+			return isAlphanumeric(b)
+		}
+	}); end > 0 && !badNumber {
+		result = LexerResult{
+			kind: Number,
+			len:  end,
+		}
+	} else {
+		err = ErrInvalidNumber{s: string(data)}
+	}
+	return
+}
