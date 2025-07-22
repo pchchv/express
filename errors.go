@@ -65,3 +65,12 @@ type ErrInvalidIdentifier struct {
 func (e ErrInvalidIdentifier) Error() string {
 	return fmt.Sprintf("Invalid identifier `%s`", e.s)
 }
+
+// ErrInvalidCoerce represents an invalid Coerce error.
+type ErrInvalidCoerce struct {
+	Err error
+}
+
+func (e ErrInvalidCoerce) Error() string {
+	return fmt.Sprintf("invalid COERCE: `%s`", e.Err.Error())
+}
