@@ -52,6 +52,12 @@ type LexerResult struct {
 	len  uint16
 }
 
+// Tokenizer is a lexer for the KSQL expression syntax.
+type Tokenizer struct {
+	pos       uint32
+	remaining []byte
+}
+
 func isUpper(c byte) bool {
 	return c >= 'A' && c <= 'Z'
 }
