@@ -66,6 +66,16 @@ func NewTokenizer(src []byte) *Tokenizer {
 	}
 }
 
+func (t *Tokenizer) chomp(num uint16) {
+	t.remaining = t.remaining[num:]
+	t.pos += uint32(num)
+}
+
+func (t *Tokenizer) skipWhitespace() {
+	skipped := skipWhitespace(t.remaining)
+	t.chomp(skipped)
+}
+
 func isUpper(c byte) bool {
 	return c >= 'A' && c <= 'Z'
 }
