@@ -74,3 +74,12 @@ type ErrInvalidCoerce struct {
 func (e ErrInvalidCoerce) Error() string {
 	return fmt.Sprintf("invalid COERCE: `%s`", e.Err.Error())
 }
+
+// ErrCustom represents a custom error.
+type ErrCustom struct {
+	S string
+}
+
+func (e ErrCustom) Error() string {
+	return e.S
+}
