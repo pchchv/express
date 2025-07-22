@@ -46,3 +46,13 @@ type ErrInvalidNumber struct {
 func (e ErrInvalidNumber) Error() string {
 	return fmt.Sprintf("Invalid number `%s`", e.s)
 }
+
+// ErrUnsupportedCharacter represents an
+// unsupported character is expression being lexed.
+type ErrUnsupportedCharacter struct {
+	b byte
+}
+
+func (e ErrUnsupportedCharacter) Error() string {
+	return fmt.Sprintf("Unsupported Character `%s`", string(e.b))
+}
