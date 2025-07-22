@@ -220,3 +220,31 @@ func tokenizeNumber(data []byte) (result LexerResult, err error) {
 	}
 	return
 }
+
+func tokenizeIdentifier(data []byte) (result LexerResult, err error) {
+	if end := takeWhile(data, func(b byte) bool {
+		return !isWhitespace(b) && b != ')' && b != '[' && b != ']' && b != ','
+	}); end > 0 && data[end-1] == '_' { // identifier must Start and end with underscore
+		result = LexerResult{
+			kind: Identifier,
+			len:  end,
+		}
+	} else {
+		err = ErrInvalidIdentifier{s: string(data)}
+	}
+	return
+}
+
+func tokenizeKeyword(data []byte, keyword string, kind TokenKind) (result LexerResult, err error) {
+	if end := takeWhile(data, func(b byte) bool {
+		return !isWhitespace(b)
+	}); end > 0 && len(data) > len(keyword) && string(data[:end]) == keyword {
+		result = LexerResult{
+			kind: kind,
+			len:  end,
+		}
+	} else {
+		err = ErrInvalidKeyword{s: string(data)}
+	}
+	return
+}
