@@ -248,3 +248,113 @@ func tokenizeKeyword(data []byte, keyword string, kind TokenKind) (result LexerR
 	}
 	return
 }
+
+// Try to lex a single token from the input stream.
+func tokenizeSingleToken(data []byte) (result LexerResult, err error) {
+	b := data[0]
+	switch b {
+	case '=':
+		if len(data) > 1 && data[1] == '=' {
+			result = LexerResult{kind: Equals, len: 2}
+		} else {
+			result = LexerResult{kind: Equals, len: 1}
+		}
+	case '+':
+		if len(data) > 1 && isDigit(data[1]) {
+			result, err = tokenizeNumber(data)
+		} else {
+			result = LexerResult{kind: Add, len: 1}
+		}
+	case '-':
+		if len(data) > 1 && isDigit(data[1]) {
+			result, err = tokenizeNumber(data)
+		} else {
+			result = LexerResult{kind: Subtract, len: 1}
+		}
+	case '*':
+		result = LexerResult{kind: Multiply, len: 1}
+	case '/':
+		result = LexerResult{kind: Divide, len: 1}
+	case '>':
+		if len(data) > 1 && data[1] == '=' {
+			result = LexerResult{kind: Gte, len: 2}
+
+		} else {
+			result = LexerResult{kind: Gt, len: 1}
+		}
+	case '<':
+		if len(data) > 1 && data[1] == '=' {
+			result = LexerResult{kind: Lte, len: 2}
+		} else {
+			result = LexerResult{kind: Lt, len: 1}
+		}
+	case '(':
+		result = LexerResult{kind: OpenParen, len: 1}
+	case ')':
+		result = LexerResult{kind: CloseParen, len: 1}
+	case '[':
+		result = LexerResult{kind: OpenBracket, len: 1}
+	case ']':
+		result = LexerResult{kind: CloseBracket, len: 1}
+	case ',':
+		result = LexerResult{kind: Comma, len: 1}
+	case '!':
+		result = LexerResult{kind: Not, len: 1}
+	case ':':
+		result = LexerResult{kind: Colon, len: 1}
+	case '"', '\'':
+		result, err = tokenizeString(data, b)
+	case '.':
+		result, err = tokenizeSelectorPath(data)
+	case 't', 'f':
+		result, err = tokenizeBool(data)
+	case '&':
+		if len(data) > 1 && data[1] == '&' {
+			result = LexerResult{kind: And, len: 2}
+		} else {
+			err = ErrUnsupportedCharacter{b: b}
+		}
+	case '|':
+		if len(data) > 1 && data[1] == '|' {
+			result = LexerResult{kind: Or, len: 2}
+		} else {
+			err = ErrUnsupportedCharacter{b: b}
+		}
+	case 'C':
+
+		if len(data) > 2 && data[2] == 'N' {
+			// can be one of CONTAINS, CONTAINS_ANY, CONTAINS_ALL
+			if len(data) > 8 && data[8] == '_' {
+				if len(data) > 10 && data[10] == 'N' {
+					result, err = tokenizeKeyword(data, "CONTAINS_ANY", ContainsAny)
+				} else {
+					result, err = tokenizeKeyword(data, "CONTAINS_ALL", ContainsAll)
+				}
+			} else {
+				result, err = tokenizeKeyword(data, "CONTAINS", Contains)
+			}
+		} else {
+			result, err = tokenizeKeyword(data, "COERCE", Coerce)
+		}
+	case 'I':
+		result, err = tokenizeKeyword(data, "IN", In)
+	case 'S':
+		result, err = tokenizeKeyword(data, "STARTSWITH", StartsWith)
+	case 'E':
+		result, err = tokenizeKeyword(data, "ENDSWITH", EndsWith)
+	case 'B':
+		result, err = tokenizeKeyword(data, "BETWEEN", Between)
+	case 'N':
+		result, err = tokenizeNull(data)
+	case '_':
+		result, err = tokenizeIdentifier(data)
+	default:
+		if isDigit(b) {
+			result, err = tokenizeNumber(data)
+		} else {
+			err = ErrUnsupportedCharacter{b: b}
+		}
+	}
+
+	return
+}
