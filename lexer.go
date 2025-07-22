@@ -58,6 +58,14 @@ type Tokenizer struct {
 	remaining []byte
 }
 
+// NewTokenizer creates a new Tokenizer for use.
+func NewTokenizer(src []byte) *Tokenizer {
+	return &Tokenizer{
+		pos:       0,
+		remaining: src,
+	}
+}
+
 func isUpper(c byte) bool {
 	return c >= 'A' && c <= 'Z'
 }
