@@ -56,3 +56,12 @@ type ErrUnsupportedCharacter struct {
 func (e ErrUnsupportedCharacter) Error() string {
 	return fmt.Sprintf("Unsupported Character `%s`", string(e.b))
 }
+
+// ErrInvalidIdentifier represents an invalid identifier.
+type ErrInvalidIdentifier struct {
+	s string
+}
+
+func (e ErrInvalidIdentifier) Error() string {
+	return fmt.Sprintf("Invalid identifier `%s`", e.s)
+}
