@@ -155,3 +155,41 @@ func tokenizeString(data []byte, quote byte) (result LexerResult, err error) {
 
 	return
 }
+
+func tokenizeNull(data []byte) (result LexerResult, err error) {
+	if end := takeWhile(data, func(b byte) bool {
+		return isAlphabetical(b)
+	}); end > 0 && string(data[:end]) == "NULL" {
+		result = LexerResult{
+			kind: Null,
+			len:  end,
+		}
+	} else {
+		err = ErrInvalidKeyword{s: string(data)}
+	}
+	return
+}
+
+func tokenizeBool(data []byte) (result LexerResult, err error) {
+	if end := takeWhile(data, func(b byte) bool {
+		return isAlphabetical(b)
+	}); end > 0 {
+		switch string(data[:end]) {
+		case "true":
+			result = LexerResult{
+				kind: BooleanTrue,
+				len:  end,
+			}
+		case "false":
+			result = LexerResult{
+				kind: BooleanFalse,
+				len:  end,
+			}
+		default:
+			err = ErrInvalidBool{s: string(data)}
+		}
+	} else {
+		err = ErrInvalidBool{s: string(data)}
+	}
+	return
+}
