@@ -71,6 +71,15 @@ func NewTokenizer(src []byte) *Tokenizer {
 	}
 }
 
+func (t *Tokenizer) Next() optionext.Option[resultext.Result[Token, error]] {
+	t.skipWhitespace()
+	if len(t.remaining) == 0 {
+		return optionext.None[resultext.Result[Token, error]]()
+	}
+
+	return t.nextToken()
+}
+
 func (t *Tokenizer) nextToken() optionext.Option[resultext.Result[Token, error]] {
 	result, err := tokenizeSingleToken(t.remaining)
 	if err != nil {
