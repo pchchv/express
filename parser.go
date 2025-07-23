@@ -3,13 +3,17 @@ package express
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/pchchv/extender/resultext"
 	"github.com/pchchv/goitertools"
 )
 
-var _ Expression = (*between)(nil)
+var (
+	_ Expression = (*between)(nil)
+	_ Expression = (*endsWith)(nil)
+)
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
 type Expression interface {
@@ -73,4 +77,27 @@ func (b between) Calculate(src []byte) (any, error) {
 type endsWith struct {
 	left  Expression
 	right Expression
+}
+
+func (e endsWith) Calculate(src []byte) (any, error) {
+	left, err := e.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := e.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s ENDSWITH %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return strings.HasSuffix(l, right.(string)), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s ENDSWITH %s !", left, right)}
+	}
 }
