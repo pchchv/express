@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	github.com/pchchv/extender v1.0.0
+	github.com/pchchv/goitertools v1.0.0
 	github.com/stretchr/testify v1.10.0
 )
 
