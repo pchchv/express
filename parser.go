@@ -13,6 +13,7 @@ import (
 var (
 	_ Expression = (*add)(nil)
 	_ Expression = (*sub)(nil)
+	_ Expression = (*div)(nil)
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
@@ -206,4 +207,27 @@ func (m multi) Calculate(src []byte) (any, error) {
 type div struct {
 	left  Expression
 	right Expression
+}
+
+func (d div) Calculate(src []byte) (any, error) {
+	left, err := d.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := d.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s / %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case float64:
+		return l / right.(float64), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s / %s", left, right)}
+	}
 }
