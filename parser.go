@@ -19,3 +19,9 @@ type Parser struct {
 	Exp       []byte
 	Tokenizer goitertools.PeekableIterator[resultext.Result[Token, error]]
 }
+
+type between struct {
+	left  Expression
+	right Expression
+	value Expression
+}
