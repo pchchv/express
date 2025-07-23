@@ -144,3 +144,8 @@ func (e endsWith) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s ENDSWITH %s !", left, right)}
 	}
 }
+
+type sub struct {
+	left  Expression
+	right Expression
+}
