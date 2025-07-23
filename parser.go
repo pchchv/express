@@ -9,6 +9,8 @@ import (
 	"github.com/pchchv/goitertools"
 )
 
+var _ Expression = (*between)(nil)
+
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
 type Expression interface {
 	// Calculate executes the parsed expression and apply it against the supplied data.
