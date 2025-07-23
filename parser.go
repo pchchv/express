@@ -251,3 +251,8 @@ func (e eq) Calculate(src []byte) (any, error) {
 
 	return reflect.DeepEqual(left, right), nil
 }
+
+type gt struct {
+	left  Expression
+	right Expression
+}
