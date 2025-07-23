@@ -69,3 +69,8 @@ func (b between) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s < %s", left, right)}
 	}
 }
+
+type endsWith struct {
+	left  Expression
+	right Expression
+}
