@@ -202,3 +202,8 @@ func (m multi) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s * %s", left, right)}
 	}
 }
+
+type div struct {
+	left  Expression
+	right Expression
+}
