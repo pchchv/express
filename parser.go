@@ -13,6 +13,7 @@ import (
 var (
 	_ Expression = (*add)(nil)
 	_ Expression = (*sub)(nil)
+	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
 )
@@ -177,4 +178,27 @@ func (s sub) Calculate(src []byte) (any, error) {
 type multi struct {
 	left  Expression
 	right Expression
+}
+
+func (m multi) Calculate(src []byte) (any, error) {
+	left, err := m.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := m.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s * %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case float64:
+		return l * right.(float64), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s * %s", left, right)}
+	}
 }
