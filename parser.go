@@ -173,3 +173,8 @@ func (s sub) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s - %s", left, right)}
 	}
 }
+
+type multi struct {
+	left  Expression
+	right Expression
+}
