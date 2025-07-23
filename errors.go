@@ -83,3 +83,12 @@ type ErrCustom struct {
 func (e ErrCustom) Error() string {
 	return e.S
 }
+
+// ErrUnsupportedTypeComparison represents a comparison of incompatible types.
+type ErrUnsupportedTypeComparison struct {
+	s string
+}
+
+func (e ErrUnsupportedTypeComparison) Error() string {
+	return fmt.Sprintf("unsupported type comparison: `%s`", e.s)
+}
