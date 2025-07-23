@@ -74,6 +74,11 @@ func (b between) Calculate(src []byte) (any, error) {
 	}
 }
 
+type add struct {
+	left  Expression
+	right Expression
+}
+
 type endsWith struct {
 	left  Expression
 	right Expression
