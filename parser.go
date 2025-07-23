@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	_ Expression = (*eq)(nil)
 	_ Expression = (*add)(nil)
 	_ Expression = (*sub)(nil)
 	_ Expression = (*div)(nil)
@@ -235,4 +236,18 @@ func (d div) Calculate(src []byte) (any, error) {
 type eq struct {
 	left  Expression
 	right Expression
+}
+
+func (e eq) Calculate(src []byte) (any, error) {
+	left, err := e.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := e.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	return reflect.DeepEqual(left, right), nil
 }
