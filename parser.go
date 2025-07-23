@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	_ Expression = (*add)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
 )
@@ -77,6 +78,43 @@ func (b between) Calculate(src []byte) (any, error) {
 type add struct {
 	left  Expression
 	right Expression
+}
+
+func (a add) Calculate(src []byte) (any, error) {
+	left, err := a.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := a.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		if left != nil && right == nil {
+			switch left.(type) {
+			case string, float64:
+				return left, nil
+			}
+		} else if right != nil && left == nil {
+			switch right.(type) {
+			case string, float64:
+				return right, nil
+			}
+		}
+
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s + %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return l + right.(string), nil
+	case float64:
+		return l + right.(float64), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s + %s", left, right)}
+	}
 }
 
 type endsWith struct {
