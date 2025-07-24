@@ -284,3 +284,8 @@ func (g gt) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s > %s", left, right)}
 	}
 }
+
+type gte struct {
+	left  Expression
+	right Expression
+}
