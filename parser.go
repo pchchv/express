@@ -14,8 +14,9 @@ var (
 	_ Expression = (*eq)(nil)
 	_ Expression = (*gt)(nil)
 	_ Expression = (*add)(nil)
-	_ Expression = (*sub)(nil)
 	_ Expression = (*div)(nil)
+	_ Expression = (*gte)(nil)
+	_ Expression = (*sub)(nil)
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
@@ -288,4 +289,32 @@ func (g gt) Calculate(src []byte) (any, error) {
 type gte struct {
 	left  Expression
 	right Expression
+}
+
+func (g gte) Calculate(src []byte) (any, error) {
+	left, err := g.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := g.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s >= %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return l >= right.(string), nil
+	case float64:
+		return l >= right.(float64), nil
+	case time.Time:
+		r := right.(time.Time)
+		return l.After(r) || l.Equal(r), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s >= %s", left, right)}
+	}
 }
