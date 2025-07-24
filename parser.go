@@ -13,6 +13,7 @@ import (
 var (
 	_ Expression = (*eq)(nil)
 	_ Expression = (*gt)(nil)
+	_ Expression = (*lt)(nil)
 	_ Expression = (*add)(nil)
 	_ Expression = (*div)(nil)
 	_ Expression = (*gte)(nil)
@@ -322,4 +323,31 @@ func (g gte) Calculate(src []byte) (any, error) {
 type lt struct {
 	left  Expression
 	right Expression
+}
+
+func (l lt) Calculate(src []byte) (any, error) {
+	left, err := l.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := l.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s < %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return l < right.(string), nil
+	case float64:
+		return l < right.(float64), nil
+	case time.Time:
+		return l.Before(right.(time.Time)), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s < %s", left, right)}
+	}
 }
