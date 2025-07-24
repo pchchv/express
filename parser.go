@@ -16,6 +16,7 @@ var (
 	_ Expression = (*or)(nil)
 	_ Expression = (*lt)(nil)
 	_ Expression = (*add)(nil)
+	_ Expression = (*and)(nil)
 	_ Expression = (*div)(nil)
 	_ Expression = (*gte)(nil)
 	_ Expression = (*lte)(nil)
@@ -425,4 +426,36 @@ func (o or) Calculate(src []byte) (any, error) {
 type and struct {
 	left  Expression
 	right Expression
+}
+
+func (a and) Calculate(src []byte) (any, error) {
+	left, err := a.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch t := left.(type) {
+	case bool:
+		if !t {
+			return false, nil
+		}
+	default:
+		return false, nil
+	}
+
+	right, err := a.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s && %s", left, right)}
+	}
+
+	switch t := left.(type) {
+	case bool:
+		return t && right.(bool), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s && %s !", left, right)}
+	}
 }
