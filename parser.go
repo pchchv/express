@@ -464,3 +464,26 @@ type startsWith struct {
 	left  Expression
 	right Expression
 }
+
+func (s startsWith) Calculate(src []byte) (any, error) {
+	left, err := s.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := s.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if reflect.TypeOf(left) != reflect.TypeOf(right) {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s STARTSWITH %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return strings.HasPrefix(l, right.(string)), nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s STARTSWITH %s !", left, right)}
+	}
+}
