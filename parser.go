@@ -487,3 +487,8 @@ func (s startsWith) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s STARTSWITH %s !", left, right)}
 	}
 }
+
+type in struct {
+	left  Expression
+	right Expression
+}
