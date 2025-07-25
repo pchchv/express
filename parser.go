@@ -519,3 +519,8 @@ func (i in) Calculate(src []byte) (any, error) {
 
 	return false, nil
 }
+
+type contains struct {
+	left  Expression
+	right Expression
+}
