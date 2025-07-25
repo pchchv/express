@@ -624,3 +624,8 @@ func (c containsAny) Calculate(src []byte) (any, error) {
 	}
 	return false, nil
 }
+
+type containsAll struct {
+	left  Expression
+	right Expression
+}
