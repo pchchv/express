@@ -555,3 +555,8 @@ func (c contains) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS %s !", left, right)}
 	}
 }
+
+type containsAny struct {
+	left  Expression
+	right Expression
+}
