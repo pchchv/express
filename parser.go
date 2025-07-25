@@ -27,6 +27,7 @@ var (
 	_ Expression = (*endsWith)(nil)
 	_ Expression = (*contains)(nil)
 	_ Expression = (*startsWith)(nil)
+	_ Expression = (*containsAny)(nil)
 )
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
@@ -559,4 +560,67 @@ func (c contains) Calculate(src []byte) (any, error) {
 type containsAny struct {
 	left  Expression
 	right Expression
+}
+
+func (c containsAny) Calculate(src []byte) (any, error) {
+	left, err := c.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := c.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch l := left.(type) {
+	case string:
+		switch r := right.(type) {
+		case string:
+			for _, c := range r {
+				for _, c2 := range l {
+					if c == c2 {
+						return true, nil
+					}
+				}
+			}
+		case []any:
+			for _, v := range r {
+				s, ok := v.(string)
+				if !ok {
+					continue
+				}
+				if strings.Contains(l, s) {
+					return true, nil
+				}
+			}
+			return false, nil
+		default:
+			return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS_ANY %s", left, right)}
+		}
+	case []any:
+		switch r := right.(type) {
+		case []any:
+			for _, rv := range r {
+				for _, lv := range l {
+					if reflect.DeepEqual(rv, lv) {
+						return true, nil
+					}
+				}
+			}
+		case string:
+			for _, c := range r {
+				for _, v := range l {
+					if reflect.DeepEqual(string(c), v) {
+						return true, nil
+					}
+				}
+			}
+		default:
+			return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS_ANY %s", left, right)}
+		}
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS_ANY %s !", left, right)}
+	}
+	return false, nil
 }
