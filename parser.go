@@ -25,6 +25,7 @@ var (
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
+	_ Expression = (*contains)(nil)
 	_ Expression = (*startsWith)(nil)
 )
 
@@ -523,4 +524,34 @@ func (i in) Calculate(src []byte) (any, error) {
 type contains struct {
 	left  Expression
 	right Expression
+}
+
+func (c contains) Calculate(src []byte) (any, error) {
+	left, err := c.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := c.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if leftTypeOf := reflect.TypeOf(left); leftTypeOf != reflect.TypeOf(right) && leftTypeOf.Kind() != reflect.Slice {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS %s", left, right)}
+	}
+
+	switch l := left.(type) {
+	case string:
+		return strings.Contains(l, right.(string)), nil
+	case []any:
+		for _, v := range l {
+			if reflect.DeepEqual(v, right) {
+				return true, nil
+			}
+		}
+		return false, nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s CONTAINS %s !", left, right)}
+	}
 }
