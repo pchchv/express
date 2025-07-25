@@ -459,3 +459,8 @@ func (a and) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s && %s !", left, right)}
 	}
 }
+
+type startsWith struct {
+	left  Expression
+	right Expression
+}
