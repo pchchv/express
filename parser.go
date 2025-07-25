@@ -15,6 +15,7 @@ var (
 	_ Expression = (*gt)(nil)
 	_ Expression = (*or)(nil)
 	_ Expression = (*lt)(nil)
+	_ Expression = (*in)(nil)
 	_ Expression = (*add)(nil)
 	_ Expression = (*and)(nil)
 	_ Expression = (*div)(nil)
@@ -24,6 +25,7 @@ var (
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
+	_ Expression = (*startsWith)(nil)
 )
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
@@ -491,4 +493,29 @@ func (s startsWith) Calculate(src []byte) (any, error) {
 type in struct {
 	left  Expression
 	right Expression
+}
+
+func (i in) Calculate(src []byte) (any, error) {
+	left, err := i.left.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	right, err := i.right.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	arr, ok := right.([]any)
+	if !ok {
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s IN %s !", left, right)}
+	}
+
+	for _, v := range arr {
+		if left == v {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
