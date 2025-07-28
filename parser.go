@@ -796,3 +796,7 @@ type str struct {
 func (s str) Calculate(_ []byte) (any, error) {
 	return s.s, nil
 }
+
+type boolean struct {
+	b bool
+}
