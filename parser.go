@@ -696,3 +696,7 @@ func (c containsAll) Calculate(src []byte) (any, error) {
 	}
 	return true, nil
 }
+
+type not struct {
+	value Expression
+}
