@@ -48,6 +48,14 @@ type Parser struct {
 	Tokenizer goitertools.PeekableIterator[resultext.Result[Token, error]]
 }
 
+func (p *Parser) parseOperation(token Token, current Expression) (ex Expression, err error) {
+	return
+}
+
+func (p *Parser) parseValue(token Token) (ex Expression, err error) {
+	return
+}
+
 type between struct {
 	left  Expression
 	right Expression
