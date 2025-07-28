@@ -96,6 +96,23 @@ func (p *Parser) parseExpression() (current Expression, err error) {
 	}
 }
 
+func (p *Parser) nextOperatorToken(operationToken Token) (token Token, err error) {
+	next := p.Tokenizer.Next()
+	if next.IsNone() {
+		start := int(operationToken.Start)
+		err = fmt.Errorf("no value found after operation: %s", string(p.Exp[start:start+int(operationToken.Len)]))
+		return
+	}
+
+	result := next.Unwrap()
+	if result.IsErr() {
+		err = result.Err()
+		return
+	}
+
+	return result.Unwrap(), nil
+}
+
 type between struct {
 	left  Expression
 	right Expression
