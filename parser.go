@@ -714,3 +714,7 @@ func (n not) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s for !", value)}
 	}
 }
+
+type array struct {
+	vec []Expression
+}
