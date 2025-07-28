@@ -10,36 +10,38 @@ import (
 	"time"
 
 	"github.com/pchchv/extender/resultext"
+	"github.com/pchchv/extender/syncext"
 	"github.com/pchchv/goitertools"
 	"github.com/tidwall/gjson"
 )
 
 var (
-	_ Expression = (*eq)(nil)
-	_ Expression = (*gt)(nil)
-	_ Expression = (*or)(nil)
-	_ Expression = (*lt)(nil)
-	_ Expression = (*in)(nil)
-	_ Expression = (*add)(nil)
-	_ Expression = (*and)(nil)
-	_ Expression = (*div)(nil)
-	_ Expression = (*gte)(nil)
-	_ Expression = (*num)(nil)
-	_ Expression = (*lte)(nil)
-	_ Expression = (*str)(nil)
-	_ Expression = (*sub)(nil)
-	_ Expression = (*not)(nil)
-	_ Expression = (*null)(nil)
-	_ Expression = (*array)(nil)
-	_ Expression = (*multi)(nil)
-	_ Expression = (*between)(nil)
-	_ Expression = (*boolean)(nil)
-	_ Expression = (*endsWith)(nil)
-	_ Expression = (*contains)(nil)
-	_ Expression = (*startsWith)(nil)
-	_ Expression = (*containsAll)(nil)
-	_ Expression = (*containsAny)(nil)
-	_ Expression = (*selectorPath)(nil)
+	_         Expression = (*eq)(nil)
+	_         Expression = (*gt)(nil)
+	_         Expression = (*or)(nil)
+	_         Expression = (*lt)(nil)
+	_         Expression = (*in)(nil)
+	_         Expression = (*add)(nil)
+	_         Expression = (*and)(nil)
+	_         Expression = (*div)(nil)
+	_         Expression = (*gte)(nil)
+	_         Expression = (*num)(nil)
+	_         Expression = (*lte)(nil)
+	_         Expression = (*str)(nil)
+	_         Expression = (*sub)(nil)
+	_         Expression = (*not)(nil)
+	_         Expression = (*null)(nil)
+	_         Expression = (*array)(nil)
+	_         Expression = (*multi)(nil)
+	_         Expression = (*between)(nil)
+	_         Expression = (*boolean)(nil)
+	_         Expression = (*endsWith)(nil)
+	_         Expression = (*contains)(nil)
+	_         Expression = (*startsWith)(nil)
+	_         Expression = (*containsAll)(nil)
+	_         Expression = (*containsAny)(nil)
+	_         Expression = (*selectorPath)(nil)
+	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
 )
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
@@ -61,8 +63,146 @@ func (p *Parser) parseOperation(token Token, current Expression) (ex Expression,
 	return
 }
 
-func (p *Parser) parseValue(token Token) (ex Expression, err error) {
-	return
+func (p *Parser) parseValue(token Token) (Expression, error) {
+	switch token.Kind {
+	case OpenBracket:
+		arr := make([]Expression, 0, 2)
+	FOR:
+		for {
+			next := p.Tokenizer.Next()
+			if next.IsNone() {
+				return nil, errors.New("unclosed Array '['")
+			}
+
+			result := next.Unwrap()
+			if result.IsErr() {
+				return nil, result.Err()
+			}
+
+			token := result.Unwrap()
+			switch token.Kind {
+			case CloseBracket:
+				break FOR
+			case Comma:
+				continue
+			default:
+				value, err := p.parseValue(token)
+				if err != nil {
+					return nil, err
+				}
+				arr = append(arr, value)
+			}
+
+			if token.Kind == CloseBracket {
+				break
+			}
+		}
+		return array{vec: arr}, nil
+	case OpenParen:
+		expression, err := p.parseExpression()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil, errors.New("expression after open parenthesis '(' ends unexpectedly")
+			}
+			return nil, err
+		}
+		return expression, nil
+	case SelectorPath:
+		start := int(token.Start)
+		return selectorPath{
+			s: string(p.Exp[start+1 : start+int(token.Len)]),
+		}, nil
+	case QuotedString:
+		start := int(token.Start)
+		return str{
+			s: string(p.Exp[start+1 : start+int(token.Len)-1]),
+		}, nil
+	case Number:
+		start := int(token.Start)
+		f64, err := strconv.ParseFloat(string(p.Exp[start:start+int(token.Len)]), 64)
+		if err != nil {
+			return nil, err
+		}
+
+		return num{
+			n: f64,
+		}, nil
+	case BooleanTrue:
+		return boolean{b: true}, nil
+	case BooleanFalse:
+		return boolean{b: false}, nil
+	case Null:
+		return null{}, nil
+	case Coerce:
+		// COERCE <expression> _<datatype>_
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		var constEligible bool
+		switch nextToken.Kind {
+		case QuotedString, Number, BooleanTrue, BooleanFalse, Null:
+			constEligible = true
+		}
+
+		expression, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		for {
+			next := p.Tokenizer.Next()
+			if next.IsNone() {
+				return nil, errors.New("no identifier after value for: COERCE")
+			}
+
+			result := next.Unwrap()
+			if result.IsErr() {
+				return nil, result.Err()
+			}
+
+			identifierToken := result.Unwrap()
+			start := int(identifierToken.Start)
+			identifier := string(p.Exp[start : start+int(identifierToken.Len)])
+			if identifierToken.Kind != Identifier {
+				return nil, fmt.Errorf("COERCE missing data type identifier, found instead: %s", identifier)
+			}
+
+			guard := Coercions.RLock()
+			fn, found := guard.T[identifier]
+			guard.RUnlock()
+			if found {
+				constEligible, expression, err = fn(p, constEligible, expression)
+				if err != nil {
+					return nil, err
+				}
+			} else {
+				return nil, fmt.Errorf("invalid COERCE data type '%s'", identifier)
+			}
+
+			nextPeeked := p.Tokenizer.Peek()
+			if nextPeeked.IsSome() && nextPeeked.Unwrap().IsOk() && nextPeeked.Unwrap().Unwrap().Kind == Comma {
+				_ = p.Tokenizer.Next() // consume peeked comma
+				continue
+			}
+			break
+		}
+		return expression, nil
+	case Not:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		value, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+		return not{value: value}, nil
+	default:
+		return nil, fmt.Errorf("token is not a valid value: %v", token)
+	}
 }
 
 func (p *Parser) parseExpression() (current Expression, err error) {
