@@ -700,3 +700,17 @@ func (c containsAll) Calculate(src []byte) (any, error) {
 type not struct {
 	value Expression
 }
+
+func (n not) Calculate(src []byte) (any, error) {
+	value, err := n.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch t := value.(type) {
+	case bool:
+		return !t, nil
+	default:
+		return nil, ErrUnsupportedTypeComparison{s: fmt.Sprintf("%s for !", value)}
+	}
+}
