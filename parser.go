@@ -25,6 +25,7 @@ var (
 	_ Expression = (*gte)(nil)
 	_ Expression = (*num)(nil)
 	_ Expression = (*lte)(nil)
+	_ Expression = (*str)(nil)
 	_ Expression = (*sub)(nil)
 	_ Expression = (*not)(nil)
 	_ Expression = (*array)(nil)
@@ -790,4 +791,8 @@ func (n num) Calculate(_ []byte) (any, error) {
 
 type str struct {
 	s string
+}
+
+func (s str) Calculate(_ []byte) (any, error) {
+	return s.s, nil
 }
