@@ -28,6 +28,7 @@ var (
 	_ Expression = (*str)(nil)
 	_ Expression = (*sub)(nil)
 	_ Expression = (*not)(nil)
+	_ Expression = (*null)(nil)
 	_ Expression = (*array)(nil)
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
@@ -807,3 +808,7 @@ func (b boolean) Calculate(_ []byte) (any, error) {
 }
 
 type null struct{}
+
+func (bn null) Calculate(_ []byte) (any, error) {
+	return nil, nil
+}
