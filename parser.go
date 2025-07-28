@@ -778,3 +778,7 @@ func (a array) Calculate(src []byte) (any, error) {
 
 	return arr, nil
 }
+
+type num struct {
+	n float64
+}
