@@ -23,6 +23,7 @@ var (
 	_ Expression = (*and)(nil)
 	_ Expression = (*div)(nil)
 	_ Expression = (*gte)(nil)
+	_ Expression = (*num)(nil)
 	_ Expression = (*lte)(nil)
 	_ Expression = (*sub)(nil)
 	_ Expression = (*not)(nil)
@@ -781,4 +782,8 @@ func (a array) Calculate(src []byte) (any, error) {
 
 type num struct {
 	n float64
+}
+
+func (n num) Calculate(_ []byte) (any, error) {
+	return n.n, nil
 }
