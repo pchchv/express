@@ -56,6 +56,39 @@ func (p *Parser) parseValue(token Token) (ex Expression, err error) {
 	return
 }
 
+func (p *Parser) parseExpression() (current Expression, err error) {
+	for {
+		next := p.Tokenizer.Next()
+		if next.IsNone() {
+			return current, nil
+		}
+
+		result := next.Unwrap()
+		if result.IsErr() {
+			return nil, result.Err()
+		}
+
+		token := result.Unwrap()
+		if current == nil {
+			// look for nextToken value
+			current, err = p.parseValue(token)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			if token.Kind == CloseParen {
+				return current, nil
+			}
+
+			// look for nextToken operation
+			current, err = p.parseOperation(token, current)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+}
+
 type between struct {
 	left  Expression
 	right Expression
