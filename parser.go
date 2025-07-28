@@ -829,3 +829,7 @@ type null struct{}
 func (bn null) Calculate(_ []byte) (any, error) {
 	return nil, nil
 }
+
+type selectorPath struct {
+	s string
+}
