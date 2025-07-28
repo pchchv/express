@@ -805,3 +805,5 @@ type boolean struct {
 func (b boolean) Calculate(_ []byte) (any, error) {
 	return b.b, nil
 }
+
+type null struct{}
