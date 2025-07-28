@@ -22,6 +22,8 @@ var (
 	_ Expression = (*gte)(nil)
 	_ Expression = (*lte)(nil)
 	_ Expression = (*sub)(nil)
+	_ Expression = (*not)(nil)
+	_ Expression = (*array)(nil)
 	_ Expression = (*multi)(nil)
 	_ Expression = (*between)(nil)
 	_ Expression = (*endsWith)(nil)
@@ -717,4 +719,18 @@ func (n not) Calculate(src []byte) (any, error) {
 
 type array struct {
 	vec []Expression
+}
+
+func (a array) Calculate(src []byte) (any, error) {
+	arr := make([]any, 0, len(a.vec))
+	for _, v := range a.vec {
+		res, err := v.Calculate(src)
+		if err != nil {
+			return nil, err
+		}
+
+		arr = append(arr, res)
+	}
+
+	return arr, nil
 }
