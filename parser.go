@@ -11,6 +11,7 @@ import (
 
 	"github.com/pchchv/extender/resultext"
 	"github.com/pchchv/goitertools"
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -38,6 +39,7 @@ var (
 	_ Expression = (*startsWith)(nil)
 	_ Expression = (*containsAll)(nil)
 	_ Expression = (*containsAny)(nil)
+	_ Expression = (*selectorPath)(nil)
 )
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
@@ -832,4 +834,8 @@ func (bn null) Calculate(_ []byte) (any, error) {
 
 type selectorPath struct {
 	s string
+}
+
+func (i selectorPath) Calculate(src []byte) (any, error) {
+	return gjson.GetBytes(src, i.s).Value(), nil
 }
