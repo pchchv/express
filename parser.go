@@ -787,3 +787,7 @@ type num struct {
 func (n num) Calculate(_ []byte) (any, error) {
 	return n.n, nil
 }
+
+type str struct {
+	s string
+}
