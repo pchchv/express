@@ -40,6 +40,7 @@ var (
 	_         Expression = (*startsWith)(nil)
 	_         Expression = (*containsAll)(nil)
 	_         Expression = (*containsAny)(nil)
+	_         Expression = (*coerceString)(nil)
 	_         Expression = (*selectorPath)(nil)
 	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
 )
@@ -1275,4 +1276,26 @@ func (i selectorPath) Calculate(src []byte) (any, error) {
 
 type coerceString struct {
 	value Expression
+}
+
+func (c coerceString) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case nil:
+		return "null", nil
+	case string:
+		return v, nil
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64), nil
+	case bool:
+		return strconv.FormatBool(v), nil
+	case time.Time:
+		return v.Format(time.RFC3339Nano), nil
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a string", value)}
+	}
 }
