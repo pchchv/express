@@ -1272,3 +1272,7 @@ type selectorPath struct {
 func (i selectorPath) Calculate(src []byte) (any, error) {
 	return gjson.GetBytes(src, i.s).Value(), nil
 }
+
+type coerceString struct {
+	value Expression
+}
