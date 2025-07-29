@@ -97,3 +97,7 @@ func (e ErrUnsupportedTypeComparison) Error() string {
 type ErrUnsupportedCoerce struct {
 	s string
 }
+
+func (e ErrUnsupportedCoerce) Error() string {
+	return fmt.Sprintf("unsupported type comparison for COERCE: `%s`", e.s)
+}
