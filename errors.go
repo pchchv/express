@@ -92,3 +92,8 @@ type ErrUnsupportedTypeComparison struct {
 func (e ErrUnsupportedTypeComparison) Error() string {
 	return fmt.Sprintf("unsupported type comparison: `%s`", e.s)
 }
+
+// ErrUnsupportedCoerce represents a comparison of incompatible types type casts.
+type ErrUnsupportedCoerce struct {
+	s string
+}
