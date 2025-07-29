@@ -59,8 +59,301 @@ type Parser struct {
 	Tokenizer goitertools.PeekableIterator[resultext.Result[Token, error]]
 }
 
-func (p *Parser) parseOperation(token Token, current Expression) (ex Expression, err error) {
-	return
+func (p *Parser) parseOperation(token Token, current Expression) (Expression, error) {
+	switch token.Kind {
+	case Add:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return add{
+			left:  current,
+			right: right,
+		}, nil
+	case Subtract:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return sub{
+			left:  current,
+			right: right,
+		}, nil
+	case Multiply:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return multi{
+			left:  current,
+			right: right,
+		}, nil
+	case Divide:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+		return div{
+			left:  current,
+			right: right,
+		}, nil
+	case Equals:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return eq{
+			left:  current,
+			right: right,
+		}, nil
+	case Gt:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return gt{
+			left:  current,
+			right: right,
+		}, nil
+	case Gte:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return gte{
+			left:  current,
+			right: right,
+		}, nil
+	case Lt:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return lt{
+			left:  current,
+			right: right,
+		}, nil
+	case Lte:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return lte{
+			left:  current,
+			right: right,
+		}, nil
+	case Or:
+		right, err := p.parseExpression()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil, errors.New("expression after or '||' ends unexpectedly")
+			}
+			return nil, err
+		}
+		return or{
+			left:  current,
+			right: right,
+		}, nil
+	case And:
+		right, err := p.parseExpression()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return nil, errors.New("expression after or '&&' ends unexpectedly")
+			}
+			return nil, err
+		}
+		return and{
+			left:  current,
+			right: right,
+		}, nil
+	case StartsWith:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return startsWith{
+			left:  current,
+			right: right,
+		}, nil
+	case EndsWith:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return endsWith{
+			left:  current,
+			right: right,
+		}, nil
+	case In:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return in{
+			left:  current,
+			right: right,
+		}, nil
+	case Contains:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return contains{
+			left:  current,
+			right: right,
+		}, nil
+	case ContainsAny:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return containsAny{
+			left:  current,
+			right: right,
+		}, nil
+	case ContainsAll:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(nextToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return containsAll{
+			left:  current,
+			right: right,
+		}, nil
+	case Between:
+		lhsToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		left, err := p.parseValue(lhsToken)
+		if err != nil {
+			return nil, err
+		}
+
+		rhsToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		right, err := p.parseValue(rhsToken)
+		if err != nil {
+			return nil, err
+		}
+
+		return between{
+			left:  left,
+			right: right,
+			value: current,
+		}, nil
+	case Not:
+		nextToken, err := p.nextOperatorToken(token)
+		if err != nil {
+			return nil, err
+		}
+
+		value, err := p.parseOperation(nextToken, current)
+		if err != nil {
+			return nil, err
+		}
+
+		return not{
+			value: value,
+		}, nil
+	case CloseBracket:
+		return current, nil
+	default:
+		return nil, fmt.Errorf("invalid operation: %v", token)
+	}
 }
 
 func (p *Parser) parseValue(token Token) (Expression, error) {
