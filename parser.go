@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/araddon/dateparse"
 	"github.com/pchchv/extender/resultext"
 	"github.com/pchchv/extender/syncext"
 	"github.com/pchchv/goitertools"
@@ -42,6 +43,7 @@ var (
 	_         Expression = (*containsAny)(nil)
 	_         Expression = (*coerceString)(nil)
 	_         Expression = (*selectorPath)(nil)
+	_         Expression = (*coerceDateTime)(nil)
 	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
 )
 
@@ -1302,4 +1304,25 @@ func (c coerceString) Calculate(src []byte) (any, error) {
 
 type coerceDateTime struct {
 	value Expression
+}
+
+func (c coerceDateTime) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case string:
+		t, err := dateparse.ParseAny(v)
+		if err != nil {
+			// don't return error at runtime but null same as not found
+			// which will fail equality checks and alike which is
+			// the desired behaviour
+			return nil, nil
+		}
+		return t, nil
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a DateTime", value)}
+	}
 }
