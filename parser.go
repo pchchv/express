@@ -248,6 +248,22 @@ type Parser struct {
 	Tokenizer goitertools.PeekableIterator[resultext.Result[Token, error]]
 }
 
+// Parse lex's' the provided expression and returns an Expression to be used/applied to data.
+func Parse(expression []byte) (result Expression, err error) {
+	p := Parser{
+		Exp:       expression,
+		Tokenizer: goitertools.Iter(NewTokenizer(expression)).Peekable(),
+	}
+
+	if result, err = p.parseExpression(); err != nil {
+		return nil, err
+	} else if result == nil {
+		err = errors.New("no expression results found")
+	}
+
+	return
+}
+
 func (p *Parser) parseOperation(token Token, current Expression) (Expression, error) {
 	switch token.Kind {
 	case Add:
