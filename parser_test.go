@@ -7,6 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type Star struct {
+	expression Expression
+}
+
 func TestParser(t *testing.T) {
 	assert := require.New(t)
 	tests := []struct {
