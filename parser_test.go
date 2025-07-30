@@ -777,3 +777,21 @@ func TestParser(t *testing.T) {
 		})
 	}
 }
+
+func TestParserCustomCoercion(t *testing.T) {
+	assert := require.New(t)
+	guard := Coercions.Lock()
+	guard.T["_star_"] = func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+		return constEligible, &Star{expression}, nil
+	}
+	guard.Unlock()
+
+	expression := []byte(`COERCE "My Name" _star_`)
+	input := []byte(`{}`)
+	ex, err := Parse(expression)
+	assert.NoError(err)
+
+	result, err := ex.Calculate(input)
+	assert.NoError(err)
+	assert.Equal("*******", result)
+}
