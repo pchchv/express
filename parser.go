@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/araddon/dateparse"
 	"github.com/pchchv/extender/resultext"
@@ -41,6 +43,7 @@ var (
 	_         Expression = (*startsWith)(nil)
 	_         Expression = (*containsAll)(nil)
 	_         Expression = (*containsAny)(nil)
+	_         Expression = (*coerceTitle)(nil)
 	_         Expression = (*coerceString)(nil)
 	_         Expression = (*selectorPath)(nil)
 	_         Expression = (*coerceNumber)(nil)
@@ -1409,4 +1412,22 @@ func (c coerceNumber) Calculate(src []byte) (any, error) {
 
 type coerceTitle struct {
 	value Expression
+}
+
+func (c coerceTitle) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case string:
+		r, size := utf8.DecodeRuneInString(v)
+		if size == 0 {
+			return v, nil
+		}
+		return string(unicode.ToUpper(r)) + strings.ToLower(v[1:]), nil
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a uppercase", value)}
+	}
 }
