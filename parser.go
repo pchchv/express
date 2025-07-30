@@ -44,6 +44,7 @@ var (
 	_         Expression = (*coerceString)(nil)
 	_         Expression = (*selectorPath)(nil)
 	_         Expression = (*coerceDateTime)(nil)
+	_         Expression = (*coercedConstant)(nil)
 	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
 )
 
@@ -1329,4 +1330,8 @@ func (c coerceDateTime) Calculate(src []byte) (any, error) {
 
 type coercedConstant struct {
 	value any
+}
+
+func (c coercedConstant) Calculate(_ []byte) (any, error) {
+	return c.value, nil
 }
