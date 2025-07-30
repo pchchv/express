@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/araddon/dateparse"
+	"github.com/pchchv/extender/optionext"
 	"github.com/pchchv/extender/resultext"
 	"github.com/pchchv/extender/syncext"
 	"github.com/pchchv/goitertools"
@@ -1430,4 +1431,10 @@ func (c coerceTitle) Calculate(src []byte) (any, error) {
 	default:
 		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a uppercase", value)}
 	}
+}
+
+type coerceSubstr struct {
+	value Expression
+	start optionext.Option[int]
+	end   optionext.Option[int]
 }
