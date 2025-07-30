@@ -1326,3 +1326,7 @@ func (c coerceDateTime) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a DateTime", value)}
 	}
 }
+
+type coercedConstant struct {
+	value any
+}
