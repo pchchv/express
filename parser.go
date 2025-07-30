@@ -1339,3 +1339,7 @@ func (c coercedConstant) Calculate(_ []byte) (any, error) {
 type coerceUppercase struct {
 	value Expression
 }
+
+type coerceLowercase struct {
+	value Expression
+}
