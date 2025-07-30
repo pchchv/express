@@ -1335,3 +1335,7 @@ type coercedConstant struct {
 func (c coercedConstant) Calculate(_ []byte) (any, error) {
 	return c.value, nil
 }
+
+type coerceUppercase struct {
+	value Expression
+}
