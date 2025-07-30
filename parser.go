@@ -45,6 +45,7 @@ var (
 	_         Expression = (*selectorPath)(nil)
 	_         Expression = (*coerceDateTime)(nil)
 	_         Expression = (*coerceUppercase)(nil)
+	_         Expression = (*coerceLowercase)(nil)
 	_         Expression = (*coercedConstant)(nil)
 	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
 )
@@ -1357,4 +1358,18 @@ func (c coerceUppercase) Calculate(src []byte) (any, error) {
 
 type coerceLowercase struct {
 	value Expression
+}
+
+func (c coerceLowercase) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case string:
+		return strings.ToLower(v), nil
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a lowescase", value)}
+	}
 }
