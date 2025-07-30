@@ -20,39 +20,217 @@ import (
 )
 
 var (
-	_         Expression = (*eq)(nil)
-	_         Expression = (*gt)(nil)
-	_         Expression = (*or)(nil)
-	_         Expression = (*lt)(nil)
-	_         Expression = (*in)(nil)
-	_         Expression = (*add)(nil)
-	_         Expression = (*and)(nil)
-	_         Expression = (*div)(nil)
-	_         Expression = (*gte)(nil)
-	_         Expression = (*num)(nil)
-	_         Expression = (*lte)(nil)
-	_         Expression = (*str)(nil)
-	_         Expression = (*sub)(nil)
-	_         Expression = (*not)(nil)
-	_         Expression = (*null)(nil)
-	_         Expression = (*array)(nil)
-	_         Expression = (*multi)(nil)
-	_         Expression = (*between)(nil)
-	_         Expression = (*boolean)(nil)
-	_         Expression = (*endsWith)(nil)
-	_         Expression = (*contains)(nil)
-	_         Expression = (*startsWith)(nil)
-	_         Expression = (*containsAll)(nil)
-	_         Expression = (*containsAny)(nil)
-	_         Expression = (*coerceTitle)(nil)
-	_         Expression = (*coerceString)(nil)
-	_         Expression = (*selectorPath)(nil)
-	_         Expression = (*coerceNumber)(nil)
-	_         Expression = (*coerceDateTime)(nil)
-	_         Expression = (*coerceUppercase)(nil)
-	_         Expression = (*coerceLowercase)(nil)
-	_         Expression = (*coercedConstant)(nil)
-	Coercions syncext.RWMutex[map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error)]
+	_ Expression = (*eq)(nil)
+	_ Expression = (*gt)(nil)
+	_ Expression = (*or)(nil)
+	_ Expression = (*lt)(nil)
+	_ Expression = (*in)(nil)
+	_ Expression = (*add)(nil)
+	_ Expression = (*and)(nil)
+	_ Expression = (*div)(nil)
+	_ Expression = (*gte)(nil)
+	_ Expression = (*num)(nil)
+	_ Expression = (*lte)(nil)
+	_ Expression = (*str)(nil)
+	_ Expression = (*sub)(nil)
+	_ Expression = (*not)(nil)
+	_ Expression = (*null)(nil)
+	_ Expression = (*array)(nil)
+	_ Expression = (*multi)(nil)
+	_ Expression = (*between)(nil)
+	_ Expression = (*boolean)(nil)
+	_ Expression = (*endsWith)(nil)
+	_ Expression = (*contains)(nil)
+	_ Expression = (*startsWith)(nil)
+	_ Expression = (*containsAll)(nil)
+	_ Expression = (*containsAny)(nil)
+	_ Expression = (*coerceTitle)(nil)
+	_ Expression = (*coerceString)(nil)
+	_ Expression = (*selectorPath)(nil)
+	_ Expression = (*coerceNumber)(nil)
+	_ Expression = (*coerceDateTime)(nil)
+	_ Expression = (*coerceUppercase)(nil)
+	_ Expression = (*coerceLowercase)(nil)
+	_ Expression = (*coercedConstant)(nil)
+	// Coercions is a `map` of all coercions guarded by a Mutex for use allowing registration, removal or even replacing of existing coercions.
+	Coercions = syncext.NewRWMutex(map[string]func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error){
+		"_datetime_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceDateTime{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_lowercase_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceLowercase{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_string_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceString{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_number_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceNumber{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_uppercase_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceUppercase{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_title_": func(_ *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			expression = coerceTitle{value: expression}
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+		"_substr_": func(p *Parser, constEligible bool, expression Expression) (stillConstEligible bool, e Expression, err error) {
+			// get substring info, expect the format to be _substr_[Start:end]
+			leftBracket := p.Tokenizer.Next()
+			if leftBracket.IsNone() {
+				return false, nil, ErrCustom{S: "Expected [ after _substr_"}
+			} else if leftBracket.Unwrap().IsErr() {
+				return false, nil, ErrInvalidCoerce{Err: leftBracket.Unwrap().Err()}
+			} else if leftBracket.Unwrap().Unwrap().Kind != OpenBracket {
+				return false, nil, ErrCustom{S: "Expected [ after _substr_"}
+			}
+
+			// number or colon
+			var startIndex optionext.Option[int]
+			token := p.Tokenizer.Next()
+			if token.IsNone() {
+				return false, nil, ErrCustom{S: "Expected number or colon after _substr_["}
+			} else if token.Unwrap().IsErr() {
+				return false, nil, ErrInvalidCoerce{Err: token.Unwrap().Err()}
+			} else {
+				token := token.Unwrap().Unwrap()
+				start := int(token.Start)
+				switch token.Kind {
+				case Colon:
+				case Number:
+					i64, err := strconv.ParseInt(string(p.Exp[start:start+int(token.Len)]), 10, 64)
+					if err != nil {
+						return false, nil, err
+					}
+					startIndex = optionext.Some(int(i64))
+				default:
+					return false, nil, ErrCustom{S: fmt.Sprintf("Expected number after _substr_[ but got %s", string(p.Exp[start:start+int(token.Len)]))}
+				}
+			}
+
+			// parse colon if not already
+			if startIndex.IsSome() {
+				colon := p.Tokenizer.Next()
+				if colon.IsNone() {
+					return false, nil, ErrCustom{S: "Expected : after _substr_[n"}
+				} else if colon.Unwrap().IsErr() {
+					return false, nil, ErrInvalidCoerce{Err: colon.Unwrap().Err()}
+				} else if colon.Unwrap().Unwrap().Kind != Colon {
+					return false, nil, ErrCustom{S: "Expected : after _substr_[n"}
+				}
+			}
+
+			// number or end bracket
+			var endIndex optionext.Option[int]
+			token = p.Tokenizer.Next()
+			if token.IsNone() {
+				return false, nil, ErrCustom{S: "Expected number or ] after _substr_["}
+			} else if token.Unwrap().IsErr() {
+				return false, nil, ErrInvalidCoerce{Err: token.Unwrap().Err()}
+			} else {
+				token := token.Unwrap().Unwrap()
+				start := int(token.Start)
+				switch token.Kind {
+				case CloseBracket:
+				case Number:
+					i64, err := strconv.ParseInt(string(p.Exp[start:start+int(token.Len)]), 10, 64)
+					if err != nil {
+						return false, nil, err
+					}
+					endIndex = optionext.Some(int(i64))
+				default:
+					return false, nil, ErrCustom{S: fmt.Sprintf("Expected number after _substr_[n: but got %s", string(p.Exp[start:start+int(token.Len)]))}
+				}
+			}
+
+			// parse close bracket if not already
+			if endIndex.IsSome() {
+				rightBracket := p.Tokenizer.Next()
+				if rightBracket.IsNone() {
+					return false, nil, ErrCustom{S: "Expected ] after _substr_[n:n"}
+				} else if rightBracket.Unwrap().IsErr() {
+					return false, nil, ErrInvalidCoerce{Err: rightBracket.Unwrap().Err()}
+				} else if rightBracket.Unwrap().Unwrap().Kind != CloseBracket {
+					return false, nil, ErrCustom{S: "Expected ] after _substr_[n:n"}
+				}
+			}
+
+			switch {
+			case startIndex.IsSome() && endIndex.IsSome() && startIndex.Unwrap() > endIndex.Unwrap():
+				return false, nil, ErrCustom{S: fmt.Sprintf("Start index %d cannot be greater than end index %d", startIndex.Unwrap(), endIndex.Unwrap())}
+			case startIndex.IsNone() && endIndex.IsNone():
+				return false, nil, ErrCustom{S: "Start and end index for substr cannot both be None"}
+			}
+
+			expression = coerceSubstr{
+				value: expression,
+				start: startIndex,
+				end:   endIndex,
+			}
+
+			if constEligible {
+				value, err := expression.Calculate([]byte{})
+				if err != nil {
+					return false, nil, err
+				}
+				return constEligible, coercedConstant{value: value}, nil
+			} else {
+				return false, expression, nil
+			}
+		},
+	})
 )
 
 // Expression Represents a stateless parsed expression that can be applied to JSON data.
