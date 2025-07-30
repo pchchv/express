@@ -1299,3 +1299,7 @@ func (c coerceString) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a string", value)}
 	}
 }
+
+type coerceDateTime struct {
+	value Expression
+}
