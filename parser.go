@@ -43,6 +43,7 @@ var (
 	_         Expression = (*containsAny)(nil)
 	_         Expression = (*coerceString)(nil)
 	_         Expression = (*selectorPath)(nil)
+	_         Expression = (*coerceNumber)(nil)
 	_         Expression = (*coerceDateTime)(nil)
 	_         Expression = (*coerceUppercase)(nil)
 	_         Expression = (*coerceLowercase)(nil)
@@ -1376,4 +1377,32 @@ func (c coerceLowercase) Calculate(src []byte) (any, error) {
 
 type coerceNumber struct {
 	value Expression
+}
+
+func (c coerceNumber) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case string:
+		f, err := strconv.ParseFloat(v, 64)
+		if err != nil {
+			return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a number", value)}
+		}
+		return f, nil
+	case float64:
+		return v, nil
+	case bool:
+		if v {
+			return 1.0, nil
+		} else {
+			return 0.0, nil
+		}
+	case time.Time:
+		return float64(v.UnixNano()), nil
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a number", value)}
+	}
 }
