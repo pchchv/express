@@ -1373,3 +1373,7 @@ func (c coerceLowercase) Calculate(src []byte) (any, error) {
 		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v to a lowescase", value)}
 	}
 }
+
+type coerceNumber struct {
+	value Expression
+}
