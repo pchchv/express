@@ -1438,3 +1438,38 @@ type coerceSubstr struct {
 	start optionext.Option[int]
 	end   optionext.Option[int]
 }
+
+func (c coerceSubstr) Calculate(src []byte) (any, error) {
+	value, err := c.value.Calculate(src)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v := value.(type) {
+	case string:
+		switch {
+		case c.start.IsSome() && c.end.IsSome():
+			start, end := c.start.Unwrap(), c.end.Unwrap()
+			if start < 0 || start > len(v) || end < 0 || end > len(v) {
+				return nil, nil
+			}
+			return v[start:end], nil
+		case c.start.IsSome() && c.end.IsNone():
+			start := c.start.Unwrap()
+			if start < 0 || start > len(v) {
+				return nil, nil
+			}
+			return v[start:], nil
+		case c.start.IsNone() && c.end.IsSome():
+			end := c.end.Unwrap()
+			if end < 0 || end > len(v) {
+				return nil, nil
+			}
+			return v[:end], nil
+		default:
+			return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v for substr, [%v:%v]", value, c.start, c.end)}
+		}
+	default:
+		return nil, ErrUnsupportedCoerce{s: fmt.Sprintf("unsupported type COERCE for value: %v for substr", value)}
+	}
+}
