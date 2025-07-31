@@ -90,6 +90,50 @@ func BenchmarkLexingCoerceDateTimeSelectorConstant(b *testing.B) {
 	benchLexing(b, `COERCE "2022-01-02" _datetime_ == COERCE "2022-01-02" _datetime_`)
 }
 
+func BenchmarkExecutionNumPlusNum(b *testing.B) {
+	benchExecution(b, "1 + 1 + 1 + 1 + 1", ``)
+}
+
+func BenchmarkExecutionIdentNum(b *testing.B) {
+	benchExecution(b, ".field1 + 1", `{"field1":1}`)
+}
+
+func BenchmarkExecutionIdentIdent(b *testing.B) {
+	benchExecution(b, ".field1 + .field2", `{"field1":1,"field2":1}`)
+}
+
+func BenchmarkExecutionFNameLName(b *testing.B) {
+	benchExecution(b, `.first_name + " " + .last_name`, `{"first_name":"Joey","last_name":"Bloggs"}`)
+}
+
+func BenchmarkExecutionParenDiv(b *testing.B) {
+	benchExecution(b, `(1 + 1) / 2`, ``)
+}
+
+func BenchmarkExecutionParenDivIdents(b *testing.B) {
+	benchExecution(b, `(.field1 + .field2) / .field3`, `{"field1":1,"field2":1,"field3":2}`)
+}
+
+func BenchmarkExecutionCompanyEmployees(b *testing.B) {
+	benchExecution(b, `.properties.employees > 20`, `{"name":"Company","properties":{"employees":50}}`)
+}
+
+func BenchmarkExecutionParenNot(b *testing.B) {
+	benchExecution(b, `!(.f1 != .f2)`, `{"f1":true,"f2":false}`)
+}
+
+func BenchmarkExecutionCoerceDateTimeSelector(b *testing.B) {
+	benchExecution(b, `COERCE .dt1 _datetime_ == COERCE .dt2 _datetime_`, `{"dt1":"2022-01-02","dt2":"2022-01-02"}`)
+}
+
+func BenchmarkExecutionCoerceDateTimeSelectorMixed(b *testing.B) {
+	benchExecution(b, `COERCE .dt1 _datetime_ == COERCE "2022-01-02" _datetime_`, `{"dt1":"2022-01-02"}`)
+}
+
+func BenchmarkExecutionCoerceDateTimeSelectorConstant(b *testing.B) {
+	benchExecution(b, `COERCE "2022-01-02" _datetime_ == COERCE "2022-01-02" _datetime_`, ``)
+}
+
 func benchParsing(b *testing.B, expression string) {
 	b.SetBytes(int64(len(expression)))
 	for i := 0; i < b.N; i++ {
