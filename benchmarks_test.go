@@ -46,6 +46,50 @@ func BenchmarkParsingCoerceDateTimeSelectorConstant(b *testing.B) {
 	benchParsing(b, `COERCE "2022-01-02" _datetime_ == COERCE "2022-01-02" _datetime_`)
 }
 
+func BenchmarkLexingNumPlusNum(b *testing.B) {
+	benchLexing(b, "1 + 1")
+}
+
+func BenchmarkLexingIdentNum(b *testing.B) {
+	benchLexing(b, ".field1 + 1")
+}
+
+func BenchmarkLexingIdentIdent(b *testing.B) {
+	benchLexing(b, ".field1 + .field2")
+}
+
+func BenchmarkLexingFNameLName(b *testing.B) {
+	benchLexing(b, `.first_name + " " + .last_name`)
+}
+
+func BenchmarkLexingParenDiv(b *testing.B) {
+	benchLexing(b, `(1 + 1) / 2`)
+}
+
+func BenchmarkLexingParenDivIdents(b *testing.B) {
+	benchLexing(b, `(.field1 + .field2) / .field3`)
+}
+
+func BenchmarkLexingCompanyEmployees(b *testing.B) {
+	benchLexing(b, `.properties.employees > 20`)
+}
+
+func BenchmarkLexingParenNot(b *testing.B) {
+	benchLexing(b, `!(.f1 != .f2)`)
+}
+
+func BenchmarkLexingCoerceDateTimeSelector(b *testing.B) {
+	benchLexing(b, `COERCE .dt1 _datetime_ == COERCE .dt2 _datetime_`)
+}
+
+func BenchmarkLexingCoerceDateTimeSelectorMixed(b *testing.B) {
+	benchLexing(b, `COERCE .dt1 _datetime_ == COERCE "2022-01-02" _datetime_`)
+}
+
+func BenchmarkLexingCoerceDateTimeSelectorConstant(b *testing.B) {
+	benchLexing(b, `COERCE "2022-01-02" _datetime_ == COERCE "2022-01-02" _datetime_`)
+}
+
 func benchParsing(b *testing.B, expression string) {
 	b.SetBytes(int64(len(expression)))
 	for i := 0; i < b.N; i++ {
