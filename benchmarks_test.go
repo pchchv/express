@@ -10,3 +10,13 @@ func benchParsing(b *testing.B, expression string) {
 		}
 	}
 }
+
+func benchLexing(b *testing.B, expression string) {
+	exp := []byte(expression)
+	b.SetBytes(int64(len(expression)))
+	for i := 0; i < b.N; i++ {
+		if _, err := collect(exp); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
