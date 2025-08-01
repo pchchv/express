@@ -4,8 +4,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/mattn/go-runewidth v0.0.10/go.mod h1:RAqKPSqVFrSLVXbA8x7dzmKdmGzieGRCM46jaSJTDAk=
-github.com/pchchv/extender v1.0.0 h1:NWpPIvB+inK9i5x5nWSDg8AiIrD7FWjGGXWi4K9U6ic=
-github.com/pchchv/extender v1.0.0/go.mod h1:yBvlM+ngi32kHYIhz5D+qeuU4UhPg1/MWYQmBVwClLU=
+github.com/pchchv/extender v1.1.0 h1:36xVIsp3HN0KIzUe8oNSvTcdauTSih+sBqmlsts6zCQ=
+github.com/pchchv/extender v1.1.0/go.mod h1:yBvlM+ngi32kHYIhz5D+qeuU4UhPg1/MWYQmBVwClLU=
 github.com/pchchv/go-assert v1.0.0 h1:+/IYtZCgznNIRFbRbuGN5NakcoKGIOZZPb4wTuiSgZI=
 github.com/pchchv/go-assert v1.0.0/go.mod h1:FkOAc+ewzMCGXG8pSK2d/rUEBZKMBQUXsAIQUOxXbJo=
 github.com/pchchv/goitertools v1.0.0 h1:Vz2Xh0F6k97ClmjGvpgKLI7FgNWgmPnMD1oU4pgZ3NA=
